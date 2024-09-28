@@ -1,0 +1,130 @@
+
+
+[31m2024/08/24 19:20:03 [Recovery] 2024/08/24 - 19:20:03 panic recovered:
+GET /admin/user/get_userinfo?_t=1724498403160 HTTP/1.1
+Host: localhost:8108
+Accept: application/json, text/plain, */*
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+Authorization: *
+Connection: keep-alive
+Origin: http://localhost:9105
+Referer: http://localhost:9105/
+Sec-Ch-Ua: "Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"
+Sec-Ch-Ua-Mobile: ?0
+Sec-Ch-Ua-Platform: "macOS"
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-site
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
+Verify-Encrypt: 0a0a5d06f9bec91ea402db87d5b63af0
+Verify-Time: 1724498403
+
+
+token is expired by 54h49m58s
+/Users/horizon/Documents/workspace/github/GoFlyAdmin/route/middleware/JwtVerify.go:112 (0x10552b7af)
+	ParseToken: panic(err)
+/Users/horizon/Documents/workspace/github/GoFlyAdmin/route/middleware/JwtVerify.go:102 (0x10552b64b)
+	JwtVerify: c.Set("user", ParseToken(token))
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x10540518f)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/Documents/workspace/github/GoFlyAdmin/route/middleware/validityAPi.go:46 (0x1057c50bf)
+	InitRouter.ValidityAPi.func3: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x10552bd03)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/Documents/workspace/github/GoFlyAdmin/route/middleware/LimitHandler.go:24 (0x10552bb20)
+	LimitHandler.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x1054110f3)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/recovery.go:101 (0x1054110d4)
+	CustomRecoveryWithWriter.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x105410493)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/logger.go:240 (0x105410470)
+	LoggerWithConfig.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x1054110f3)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/recovery.go:101 (0x1054110d4)
+	CustomRecoveryWithWriter.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x105410493)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/logger.go:240 (0x105410470)
+	LoggerWithConfig.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x10540fa37)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/gin.go:616 (0x10540f76c)
+	(*Engine).handleHTTPRequest: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/gin.go:572 (0x10540f393)
+	(*Engine).ServeHTTP: engine.handleHTTPRequest(c)
+/opt/homebrew/Cellar/go/1.22.4/libexec/src/net/http/server.go:3137 (0x1052184cb)
+	serverHandler.ServeHTTP: handler.ServeHTTP(rw, req)
+/opt/homebrew/Cellar/go/1.22.4/libexec/src/net/http/server.go:2039 (0x105213d67)
+	(*conn).serve: serverHandler{c.server}.ServeHTTP(w, w.req)
+/opt/homebrew/Cellar/go/1.22.4/libexec/src/runtime/asm_arm64.s:1222 (0x104f3e353)
+	goexit: MOVD	R0, R0	// NOP
+[0m
+
+
+[31m2024/08/25 00:04:17 [Recovery] 2024/08/25 - 00:04:17 panic recovered:
+GET /business/makecode/cate/get_list?page=1&pageSize=10&trade_no=&title=&name=&status=&_t=1724515457902 HTTP/1.1
+Host: localhost:8108
+Accept: application/json, text/plain, */*
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7
+Authorization: *
+Connection: keep-alive
+Origin: http://localhost:9106
+Referer: http://localhost:9106/
+Sec-Ch-Ua: "Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"
+Sec-Ch-Ua-Mobile: ?0
+Sec-Ch-Ua-Platform: "macOS"
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-site
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36
+Verify-Encrypt: 069267dfdf95ad3df9934eb4823f6f6b
+Verify-Time: 1724515457
+
+
+token is expired by 51m39s
+/Users/horizon/Documents/workspace/github/GoFlyAdmin/route/middleware/JwtVerify.go:112 (0x10552b7af)
+	ParseToken: panic(err)
+/Users/horizon/Documents/workspace/github/GoFlyAdmin/route/middleware/JwtVerify.go:102 (0x10552b64b)
+	JwtVerify: c.Set("user", ParseToken(token))
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x10540518f)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/Documents/workspace/github/GoFlyAdmin/route/middleware/validityAPi.go:46 (0x1057c50bf)
+	InitRouter.ValidityAPi.func3: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x10552bd03)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/Documents/workspace/github/GoFlyAdmin/route/middleware/LimitHandler.go:24 (0x10552bb20)
+	LimitHandler.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x1054110f3)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/recovery.go:101 (0x1054110d4)
+	CustomRecoveryWithWriter.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x105410493)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/logger.go:240 (0x105410470)
+	LoggerWithConfig.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x1054110f3)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/recovery.go:101 (0x1054110d4)
+	CustomRecoveryWithWriter.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x105410493)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/logger.go:240 (0x105410470)
+	LoggerWithConfig.func1: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/context.go:173 (0x10540fa37)
+	(*Context).Next: c.handlers[c.index](c)
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/gin.go:616 (0x10540f76c)
+	(*Engine).handleHTTPRequest: c.Next()
+/Users/horizon/go/pkg/mod/github.com/gin-gonic/gin@v1.8.1/gin.go:572 (0x10540f393)
+	(*Engine).ServeHTTP: engine.handleHTTPRequest(c)
+/opt/homebrew/Cellar/go/1.22.4/libexec/src/net/http/server.go:3137 (0x1052184cb)
+	serverHandler.ServeHTTP: handler.ServeHTTP(rw, req)
+/opt/homebrew/Cellar/go/1.22.4/libexec/src/net/http/server.go:2039 (0x105213d67)
+	(*conn).serve: serverHandler{c.server}.ServeHTTP(w, w.req)
+/opt/homebrew/Cellar/go/1.22.4/libexec/src/runtime/asm_arm64.s:1222 (0x104f3e353)
+	goexit: MOVD	R0, R0	// NOP
+[0m
