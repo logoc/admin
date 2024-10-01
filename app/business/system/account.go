@@ -117,7 +117,6 @@ func (api *Account) Save(c *gin.Context) {
 		}
 	} else {
 		delete(parameter, "rolename")
-		delete(parameter, "depname")
 		parameter["updatetime"] = time.Now().Unix()
 		res, err := model.DB().Table("business_account").
 			Data(parameter).
@@ -127,7 +126,7 @@ func (api *Account) Save(c *gin.Context) {
 			results.Failed(c, "更新失败", err)
 		} else {
 			//添加角色-多个
-			if parameter["roleid"] != nil {
+			if roleid > 0 {
 				appRoleAccess(roleid, f_id)
 			}
 			results.Success(c, "更新成功！", res, nil)
