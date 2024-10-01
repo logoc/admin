@@ -36,7 +36,6 @@ func (api *Account) Get_list(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(_pageSize)
 	MDB := model.DB().Table("business_account").Fields("id,status,name,username,avatar,mobile,remark,createtime").
 		Where("businessID", user.BusinessID)
-	MDB.Where("username", "!=", "superadmin")
 	if username != "" {
 		MDB.Where("username", "like", "%"+username+"%")
 	}

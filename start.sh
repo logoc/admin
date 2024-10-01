@@ -6,6 +6,11 @@ fi
 
 PNAME=gofly
 
+pid=`ps -ef | grep $PNAME | grep -v grep | awk '{print $2}'`
+if [ ! -z "$pid" ]; then
+    echo "gofly already runing pid:"$pid
+    exit 1
+fi
 run_daemon() {
     [ -d $WORK_DIR/log ] || mkdir $WORK_DIR/log
     cd $WORK_DIR
