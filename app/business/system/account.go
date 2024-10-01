@@ -48,8 +48,15 @@ func (api *Account) Get_list(c *gin.Context) {
 		for _, val := range list {
 			roleid, _ := model.DB().Table("business_auth_role_access").Where("uid", val["id"]).Pluck("role_id")
 			rolename, _ := model.DB().Table("business_auth_role").WhereIn("id", roleid.([]interface{})).Pluck("name")
-			val["rolename"] = rolename
-			val["roleid"] = roleid
+			roleids := roleid.([]interface{})
+			rolenames := rolename.([]interface{})
+			if len(roleids) > 0 {
+				val["roleid"] = roleids[0]
+			}
+			if len(rolenames) > 0 {
+				val["rolename"] = rolenames[0]
+			}
+
 			//头像
 			if val["avatar"] == nil {
 				val["avatar"] = rooturl.(string) + "resource/staticfile/avatar.png"
