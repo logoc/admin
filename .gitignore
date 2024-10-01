@@ -1,2 +1,5 @@
 /resource/uploads
+/resource/download
 /vendor
+*.log
+/bin

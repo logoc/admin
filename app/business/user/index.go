@@ -61,6 +61,7 @@ func (api *Index) Login(c *gin.Context) {
 		Accountid:      res["accountID"].(int64),
 		BusinessID:     res["businessID"].(int64),
 		Name:           res["name"].(string),
+		Username:       username,
 		Rolename:       role["name"].(string),
 		StandardClaims: jwt.StandardClaims{},
 	})
@@ -119,7 +120,7 @@ func (api *Index) RegisterUser(c *gin.Context) {
 func (api *Index) Get_userinfo(c *gin.Context) {
 	getuser, _ := c.Get("user") //取值 实现了跨中间件取值
 	user := getuser.(*middleware.UserClaims)
-	userdata, err := model.DB().Table("business_account").Fields("id,businessID,username,name,nickname,city,company,avatar,status").Where("id", user.ID).First()
+	userdata, err := model.DB().Table("business_account").Fields("id,businessID,name,username,avatar").Where("id", user.ID).First()
 	if err != nil {
 		results.Failed(c, "查找用户数据！", err)
 	} else {
@@ -136,11 +137,8 @@ func (api *Index) Get_userinfo(c *gin.Context) {
 			"name":         userdata["name"],
 			"avatar":       userdata["avatar"],
 			"introduction": userdata["remark"],
-			"nickname":     userdata["nickname"],
-			"city":         userdata["city"],
-			"company":      userdata["company"],
 			"rooturl":      rooturl, //图片
-			"role":         "admin", //权限
+			// "role":         "admin", //权限
 		}, nil)
 	}
 }

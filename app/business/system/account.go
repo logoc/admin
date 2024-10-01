@@ -29,23 +29,16 @@ type Account struct {
 func (api *Account) Get_list(c *gin.Context) {
 	getuser, _ := c.Get("user")
 	user := getuser.(*middleware.UserClaims)
-	cid := c.DefaultQuery("cid", "0")
-	name := c.DefaultQuery("name", "")
-	mobile := c.DefaultQuery("cimobiled", "")
+	username := c.DefaultQuery("username", "")
 	page := c.DefaultQuery("page", "1")
 	_pageSize := c.DefaultQuery("pageSize", "10")
 	pageNo, _ := strconv.Atoi(page)
 	pageSize, _ := strconv.Atoi(_pageSize)
 	MDB := model.DB().Table("business_account").Fields("id,status,name,username,avatar,mobile,remark,createtime").
 		Where("businessID", user.BusinessID)
-	if cid != "0" {
-		MDB.Where("dept_id", cid)
-	}
-	if name != "" {
-		MDB.Where("name", "like", "%"+name+"%")
-	}
-	if mobile != "" {
-		MDB.Where("mobile", mobile)
+	MDB.Where("username", "!=", "superadmin")
+	if username != "" {
+		MDB.Where("username", "like", "%"+username+"%")
 	}
 	list, err := MDB.Limit(pageSize).Page(pageNo).Order("id asc").Get()
 	if err != nil {
@@ -88,9 +81,9 @@ func (api *Account) Save(c *gin.Context) {
 	if parameter["id"] != nil {
 		f_id = parameter["id"].(float64)
 	}
-	var roleid []interface{}
+	var roleid float64
 	if parameter["roleid"] != nil {
-		roleid = parameter["roleid"].([]interface{})
+		roleid = parameter["roleid"].(float64)
 		delete(parameter, "roleid")
 	}
 	if parameter["password"] != nil && parameter["password"] != "" {
@@ -128,7 +121,7 @@ func (api *Account) Save(c *gin.Context) {
 			results.Failed(c, "更新失败", err)
 		} else {
 			//添加角色-多个
-			if roleid != nil {
+			if parameter["roleid"] != nil {
 				appRoleAccess(roleid, f_id)
 			}
 			results.Success(c, "更新成功！", res, nil)
@@ -169,7 +162,7 @@ func (api *Account) Del(c *gin.Context) {
 }
 
 // 添加授权
-func appRoleAccess(roleids []interface{}, uid interface{}) {
+func appRolesAccess(roleids []interface{}, uid interface{}) {
 	//批量提交
 	model.DB().Table("business_auth_role_access").Where("uid", uid).Delete()
 	save_arr := []map[string]interface{}{}
@@ -178,6 +171,15 @@ func appRoleAccess(roleids []interface{}, uid interface{}) {
 		save_arr = append(save_arr, marr)
 	}
 	model.DB().Table("business_auth_role_access").Data(save_arr).Insert()
+}
+
+func appRoleAccess(roleids float64, uid interface{}) {
+	//批量提交
+	model.DB().Table("business_auth_role_access").Where("uid", uid).Delete()
+
+	marr := map[string]interface{}{"uid": uid, "role_id": roleids}
+
+	model.DB().Table("business_auth_role_access").Data(marr).Insert()
 }
 
 // 获取账号信息

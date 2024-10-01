@@ -26,10 +26,14 @@ func init() {
 func (api *Data) Get_user(c *gin.Context) {
 	getuser, _ := c.Get("user") //取值 实现了跨中间件取值
 	user := getuser.(*middleware.UserClaims)
-	data, err := model.DB().Table("business_account").Where("id", user.ID).Fields("id,status,nickname,name,mobile,email,company,remark,city,area,address,createtime").First()
+
+	data, err := model.DB().Table("business_account").Where("id", user.ID).Fields("id,username,name,mobile,remark,createtime").First()
 	if err != nil {
 		results.Failed(c, "获取账号信息失败", err)
 	} else {
+		// roleid, _ := model.DB().Table("business_auth_role_access").Where("uid", user.ID).Pluck("role_id")
+		// rolename, err := model.DB().Table("business_auth_role").WhereIn("id", roleid.([]interface{})).Pluck("name")
+		data["rolename"] = user.Rolename
 		results.Success(c, "获取账号信息成功！", data, nil)
 	}
 }
