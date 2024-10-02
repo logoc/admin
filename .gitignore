@@ -1,5 +1,6 @@
 /resource/uploads
 /resource/download
+/resource/excels
 /vendor
 *.log
 /bin

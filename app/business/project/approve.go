@@ -2,6 +2,7 @@ package project
 
 import (
 	"encoding/json"
+	"fmt"
 	"gofly/model"
 	"gofly/route/middleware"
 	"gofly/utils/gf"
@@ -32,8 +33,15 @@ func (api *Approve) Save(c *gin.Context) {
 	id := parameter["id"]
 	note := parameter["note"]
 	approveStatus := parameter["status"].([]interface{})
-	// log.Printf("[info] 删除文件明细失败！ %v \n", approveStatus[0])
-	res, err := model.DB().Table("business_project_files").Where("id", id).Data(map[string]interface{}{"approve_status": approveStatus[0], "approve_uid": user.Name, "approve_note": note, "approve_time": time.Now().Unix()}).Update()
+	data := map[string]interface{}{
+		"approve_status": approveStatus[0],
+		"approve_uid":    user.Name,
+		"approve_note":   note,
+		"approve_time":   time.Now().Unix(),
+		"update_time":    time.Now().Unix(),
+	}
+
+	res, err := model.DB().Table("business_project_files").Where("id", id).Data(data).Update()
 	if err != nil {
 		results.Failed(c, "审批失败", err)
 	} else {
@@ -58,13 +66,18 @@ func (api *Approve) Get_list(c *gin.Context) {
 	if approveStatus != "" && approveStatus != "*" {
 		MDB.Where("a.approve_status", approveStatus)
 		MDBC.Where("approve_status", approveStatus)
+	} else {
+		MDB.Where("a.approve_status", ">", -2)
+		MDBC.Where("approve_status", ">", -2)
 	}
 	list, err := MDB.Limit(pageSize).Page(pageNo).Fields("a.*,b.name").Order("a.id desc").Get()
 	if err != nil {
 		results.Failed(c, err.Error(), nil)
 	} else {
 		for _, val := range list {
-			val["create_time"] = time.Unix(val["create_time"].(int64), 0).Format("2006-01-02 01:01:00")
+			if val["name"] == nil {
+				val["name"] = fmt.Sprintf("%s%s", val["user_name"], "[已删除]")
+			}
 		}
 		var totalCount int64
 		totalCount, _ = MDBC.Count("*")

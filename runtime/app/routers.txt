@@ -33,10 +33,11 @@
 /common/uploadfile/get_image
 /common/uploadfile/get_imagebase
 /common/install/index
-/business/platmanager/plat/del
-/business/platmanager/account/del
 /business/project/upconfig/del
 /business/project/upfile/del
+/business/project/project/del
+/business/platmanager/plat/del
+/business/platmanager/account/del
 /business/system/role/del
 /business/system/rule/del
 /business/system/account/del
@@ -72,7 +73,7 @@
 /business/project/upconfig/save
 /business/project/upfile/uploadExcel
 /business/project/approve/save
-/business/project/project/save
+/business/project/project/update_publishlink
 /business/common/message/read
 /common/upload/file
 /common/upload/image

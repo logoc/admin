@@ -2,6 +2,7 @@ package project
 
 import (
 	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -78,9 +79,6 @@ func (api *Upfile) Get_list(c *gin.Context) {
 	if err != nil {
 		results.Failed(c, err.Error(), nil)
 	} else {
-		// for _, val := range list {
-		// 	val["create_time"] = time.Unix(val["create_time"].(int64), 0).Format("2006-01-02 01:01:00")
-		// }
 		var totalCount int64
 		totalCount, _ = MDBC.Count("*")
 		results.Success(c, "获取全部列表", map[string]interface{}{
@@ -97,7 +95,7 @@ func (api *Upfile) UploadExcel(c *gin.Context) {
 	user := getuser.(*middleware.UserClaims)
 	file, err := c.FormFile("file")
 	if err != nil {
-		results.Failed(c, "文件上传失败", err)
+		results.Failed(c, "文件破损，打开失败", err)
 		return
 	}
 	//判断文件是否已经传过
@@ -108,32 +106,36 @@ func (api *Upfile) UploadExcel(c *gin.Context) {
 	}
 	projectDatas, err := parseExcel(fileContent)
 	if err != nil {
-		results.Failed(c, "文件解析失败", err)
+		results.Failed(c, "文件Excel内容解析失败", err)
 		return
 	}
-	m_d5 := md5.New()
+	m_d5 := sha256.New()
 	if _, err := io.Copy(m_d5, fileContent); err != nil {
 		results.Failed(c, "文件签名失败", err)
 		return
 	}
 	sha1_str := hex.EncodeToString(m_d5.Sum(nil))
-	nowTime := time.Now().Unix() //当前时间
-	//查找该用户是否传过
-	fileInfo, _ := model.DB().Table("business_project_files").Where("uid", user.ID).
-		Where("sha1", sha1_str).Fields("file_name").First()
+
+	//上传到的路径
+	filename_arr := strings.Split(file.Filename, ".")
+	// 查看文件是否上传过
+	fileInfo, _ := model.DB().Table("business_project_files").
+		Where("uid", user.ID).
+		Where("file_name", filename_arr[0]).
+		Fields("file_name", "user_name", "sha1", "create_time").First()
 	if fileInfo != nil { //文件是否已经存在
-		results.Success(c, "文件已上传", fileInfo, nil)
+		results.Failed(c, "文件名称重复,请修复名称,避免重复上传", fileInfo)
 		return
 	} else {
-		file_path := fmt.Sprintf("%s%s%s", "resource/uploads/", time.Now().Format("20060102"), "/")
+		file_path := fmt.Sprintf("%s%s%s", "resource/excels/", time.Now().Format("20060102"), "/")
 		//如果没有filepath文件目录就创建一个
 		if _, err := os.Stat(file_path); err != nil {
 			if !os.IsExist(err) {
 				os.MkdirAll(file_path, os.ModePerm)
 			}
 		}
-		//上传到的路径
-		filename_arr := strings.Split(file.Filename, ".")
+
+		nowTime := time.Now().Unix() //当前时间
 		//重新名片-lunix系统不支持中文
 		name_str := md5Str(fmt.Sprintf("%v%s", nowTime, filename_arr[0]))      //组装文件保存名字
 		file_Filename := fmt.Sprintf("%s%s%s", name_str, ".", filename_arr[1]) //文件加.后缀
@@ -141,25 +143,21 @@ func (api *Upfile) UploadExcel(c *gin.Context) {
 		// 上传文件到指定的目录
 		err = c.SaveUploadedFile(file, path)
 		if err != nil { //上传失败
-			c.JSON(200, gin.H{
-				"uid":      sha1_str,
-				"name":     file.Filename,
-				"status":   "error",
-				"response": "上传失败",
-				"time":     nowTime,
-			})
+			results.Failed(c, "文件硬盘存储失败", err)
+			return
 		} else { //上传成功
 			//保存数据
 			dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 			Insertdata := map[string]interface{}{
 				"user_name":      user.Username,
 				"uid":            user.ID,
-				"file_name":      file.Filename,
+				"file_name":      filename_arr[0],
 				"sha1":           sha1_str,
 				"file_size":      file.Size,
 				"file_path":      path,
 				"project_count":  len(projectDatas),
 				"storage":        dir + "/" + path,
+				"update_time":    nowTime,
 				"create_time":    nowTime,
 				"approve_status": 0,
 			}
@@ -171,7 +169,7 @@ func (api *Upfile) UploadExcel(c *gin.Context) {
 			}
 			insertProjects(fileId, projectDatas)
 			//返回数据
-			getdata, err := model.DB().Table("business_project_files").Where("id", fileId).Fields("id, file_name,file_size, approve_status, create_time").First()
+			getdata, err := model.DB().Table("business_project_files").Where("id", fileId).Fields("id, file_name,file_size, sha1").First()
 			if err != nil {
 				results.Failed(c, "查询更新失败", err)
 				return

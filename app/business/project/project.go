@@ -213,20 +213,42 @@ func (api *Project) Get_search(c *gin.Context) {
 	}
 }
 
-// 保存
-func (api *Project) Save(c *gin.Context) {
+// 更新发文链接
+func (api *Project) Update_publishlink(c *gin.Context) {
 	body, _ := io.ReadAll(c.Request.Body)
 	var parameter map[string]interface{}
 	_ = json.Unmarshal(body, &parameter)
-	delete(parameter, "catename")
-	parameter["createtime"] = time.Now().Unix()
-	res, err := model.DB().Table("common_picture").
-		Data(parameter).
+	if parameter["id"] == nil || parameter["publish_link"] == nil {
+		results.Failed(c, "参数错误", nil)
+		return
+	}
+	data := map[string]interface{}{
+		"publish_link": parameter["publish_link"],
+	}
+	res, err := model.DB().Table("business_project").
+		Data(data).
 		Where("id", parameter["id"]).
 		Update()
 	if err != nil {
 		results.Failed(c, "更新失败", err)
 	} else {
 		results.Success(c, "更新成功！", res, nil)
+	}
+}
+
+func (api *Project) Del(c *gin.Context) {
+	body, _ := io.ReadAll(c.Request.Body)
+	var parameter map[string]interface{}
+	_ = json.Unmarshal(body, &parameter)
+	if parameter["ids"] == nil {
+		results.Failed(c, "参数错误", nil)
+		return
+	}
+	ids := parameter["ids"].([]interface{})
+	del_id, err := model.DB().Table("business_project").WhereIn("id", ids).Delete()
+	if err != nil {
+		results.Failed(c, "删除失败", err)
+	} else {
+		results.Success(c, "删除成功！", del_id, nil)
 	}
 }
