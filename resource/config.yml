@@ -44,7 +44,7 @@ app:
      #不需要api接口合法性验证-根模块md5加密
      noVerifyAPIRoot: resource,webbusiness,webadmin
      #不需要验证token-具体请求路径
-     noVerifyToken: /common/uploadfile/get_image,/common/install/index,/common/install/save,/admin/user/login,/admin/user/logout,/admin/user/refreshtoken,/admin/user/get_code,/admin/user/resetPassword,/business/user/login,/business/user/logout,/business/user/refreshtoken,/business/user/get_code,/business/user/resetPassword,/wxoffi/service/getPost_api,/wxapp/user/get_openid,/admin/user/get_logininfo,/business/user/get_logininfo
+     noVerifyToken: /common/uploadfile/get_image,/business/user/login_msg,/business/user/login,/business/user/logout,/business/user/refreshtoken,/business/user/get_code,/business/user/resetPassword,/business/user/get_logininfo
      #不需要接口合法性-具体请求路径
      noVerifyAPI: /wxoffi/service/getPost_api,/common/install/index,/common/install/save,
 log:

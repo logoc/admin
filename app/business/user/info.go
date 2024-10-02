@@ -131,7 +131,7 @@ func (api *Info) TeamList(c *gin.Context) {
 		teamItem{
 			Id:           1,
 			Avatar:       avatar,
-			Name:         "GoFly智能应用团队",
+			Name:         "智能应用团队",
 			PeopleNumber: rand.Intn(50),
 		},
 		teamItem{

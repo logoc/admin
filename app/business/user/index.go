@@ -13,10 +13,13 @@ import (
 	"strings"
 	"time"
 
+	openapi "github.com/alibabacloud-go/darabonba-openapi/client"
+	dysmsapi "github.com/alibabacloud-go/dysmsapi-20170525/v2/client"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/gomail.v2"
 )
+
+var Client *dysmsapi.Client
 
 /**
 *使用 Index 是省略路径中的index
@@ -24,6 +27,23 @@ import (
  */
 func init() {
 	gf.Register(&Index{}, reflect.TypeOf(Index{}).PkgPath())
+	// Client, _ := CreateDysmsapiClient()
+
+}
+
+// 使用AK&SK初始化账号Client
+func CreateDysmsapiClient() (_result *dysmsapi.Client, _err error) {
+	id := ""
+	secret := ""
+	config := &openapi.Config{
+		AccessKeyId:     &id,
+		AccessKeySecret: &secret,
+	}
+	endPoint := "dysmsapi.aliyuncs.com"
+	config.Endpoint = &endPoint
+	_result = &dysmsapi.Client{}
+	_result, _err = dysmsapi.NewClient(config)
+	return _result, _err
 }
 
 type Index struct {
@@ -68,7 +88,56 @@ func (api *Index) Login(c *gin.Context) {
 	model.DB().Table("business_account").Where("id", res["id"]).Data(map[string]interface{}{"loginstatus": 1, "lastLoginTime": time.Now().Unix(), "lastLoginIp": gf.GetIp(c)}).Update()
 	//登录日志
 	model.DB().Table("login_logs").
-		Data(map[string]interface{}{"type": 1, "uid": res["id"], "out_in": "in",
+		Data(map[string]interface{}{"type": 1, "uid": res["id"], "out_in": "in", "login_type": "password",
+			"createtime": time.Now().Unix(), "loginIP": gf.GetIp(c)}).Insert()
+	results.Success(c, "登录成功返回token！", token, nil)
+}
+
+/**
+*1.《登录》
+ */
+func (api *Index) Login_msg(c *gin.Context) {
+	//获取post传过来的data
+	body, _ := io.ReadAll(c.Request.Body)
+	var parameter map[string]interface{}
+	_ = json.Unmarshal(body, &parameter)
+	if parameter["mobile"] == nil || parameter["code"] == nil {
+		results.Failed(c, "请提交手机号或密码！", nil)
+		return
+	}
+	mobile := parameter["mobile"].(string)
+	code := parameter["code"].(string)
+	res, err := model.DB().Table("common_verify_code").Fields("*").Where("keyname", mobile).Where("code", code).First()
+	if res == nil || err != nil {
+		results.Failed(c, "验证失败，验证码错误", nil)
+		return
+	}
+	// if res["createtime"].(int64)+600 < time.Now().Unix() {
+	// 	results.Failed(c, "验证码已过期", nil)
+	// 	return
+	// }
+
+	res, err = model.DB().Table("business_account").Fields("id,accountID,businessID,password,salt,name,username").Where("username", mobile).OrWhere("mobile", mobile).First()
+	if res == nil || err != nil {
+		results.Failed(c, "账号不存在！", nil)
+		return
+	}
+	roleid, _ := model.DB().Table("business_auth_role_access").Where("uid", res["id"]).Pluck("role_id")
+	role, _ := model.DB().Table("business_auth_role").WhereIn("id", roleid.([]interface{})).Fields("name").First()
+	//token
+	token := middleware.GenerateToken(&middleware.UserClaims{
+		ID:             res["id"].(int64),
+		Accountid:      res["accountID"].(int64),
+		BusinessID:     res["businessID"].(int64),
+		Name:           res["name"].(string),
+		Username:       res["username"].(string),
+		Rolename:       role["name"].(string),
+		StandardClaims: jwt.StandardClaims{},
+	})
+	model.DB().Table("business_account").Where("id", res["id"]).Data(map[string]interface{}{"loginstatus": 1, "lastLoginTime": time.Now().Unix(), "lastLoginIp": gf.GetIp(c)}).Update()
+	//登录日志
+	model.DB().Table("login_logs").
+		Data(map[string]interface{}{"type": 1, "uid": res["id"], "out_in": "in", "login_type": "mobile",
 			"createtime": time.Now().Unix(), "loginIP": gf.GetIp(c)}).Insert()
 	results.Success(c, "登录成功返回token！", token, nil)
 }
@@ -172,44 +241,17 @@ func (api *Index) Logout(c *gin.Context) {
 *  6获取验证码
  */
 func (api *Index) Get_code(c *gin.Context) {
-	email := c.DefaultQuery("email", "")
-	if email == "" {
-		results.Failed(c, "请填写邮箱", nil)
+	mobile := c.DefaultQuery("mobile", "")
+	if mobile == "" {
+		results.Failed(c, "请填写电话号码", nil)
 	} else {
-		emailConfig, _ := model.DB().Table("common_email").Where("data_from", "common").First()
-		if emailConfig == nil {
-			results.Failed(c, "请到admin后台“配置管理”配置邮箱", nil)
+		mobileConfig, _ := model.DB().Table("common_mobile").Where("data_from", "login").First()
+		if mobileConfig == nil {
+			results.Failed(c, "请联系开发人员，检查配置", nil)
 		} else {
 			code := gf.GenValidateCode(6)
-			sender := emailConfig["sender_email"].(string)  //发送者qq邮箱
-			authCode := emailConfig["auth_code"].(string)   //qq邮箱授权码
-			mailTitle := emailConfig["mail_title"].(string) //邮件标题
-			mailBody := emailConfig["mail_body"].(string)   //邮件内容,可以是html
-
-			m := gomail.NewMessage()
-			m.SetHeader("From", sender)       //发送者腾讯邮箱账号
-			m.SetHeader("To", email)          //接收者邮箱列表
-			m.SetHeader("Subject", mailTitle) //邮件标题
-			m.SetBody("text/html", mailBody)  //邮件内容,可以是html
-
-			// //添加附件
-			// zipPath := "./user/temp.zip"
-			// m.Attach(zipPath)
-
-			//发送邮件服务器、端口、发送者qq邮箱、qq邮箱授权码
-			//服务器地址和端口是腾讯的
-			service_host := "smtp.qq.com"
-			if _, ok := emailConfig["service_host"]; ok {
-				service_host = emailConfig["service_host"].(string)
-			}
-			service_port := 587
-			if _, ok := emailConfig["service_port"]; ok {
-				service_port = gf.InterfaceToInt(emailConfig["service_port"])
-			}
-			d := gomail.NewDialer(service_host, service_port, sender, authCode)
-			err := d.DialAndSend(m)
-			_, erro := model.DB().Table("common_verify_code").Data(map[string]interface{}{
-				"keyname":    email,
+			err, erro := model.DB().Table("common_verify_code").Data(map[string]interface{}{
+				"keyname":    mobile,
 				"code":       code,
 				"createtime": time.Now().Unix(),
 			}).Insert()

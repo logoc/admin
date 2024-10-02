@@ -48,14 +48,15 @@
 /business/user/data/changePassword
 /business/user/data/checkPassword
 /business/user/data/saveInfo
+/business/user/login
+/business/user/login_msg
+/business/user/logout
 /business/user/refreshtoken
 /business/user/registerUser
 /business/user/resetPassword
 /business/user/info/latestActivity
 /business/user/info/projectList
 /business/user/info/teamList
-/business/user/login
-/business/user/logout
 /business/system/role/save
 /business/system/role/upStatus
 /business/system/rule/save
