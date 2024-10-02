@@ -38,7 +38,6 @@ func (api *Approve) Save(c *gin.Context) {
 		"approve_uid":    user.Name,
 		"approve_note":   note,
 		"approve_time":   time.Now().Unix(),
-		"update_time":    time.Now().Unix(),
 	}
 
 	res, err := model.DB().Table("business_project_files").Where("id", id).Data(data).Update()
