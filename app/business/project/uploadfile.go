@@ -12,6 +12,7 @@ import (
 	"gofly/utils/results"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -177,6 +178,25 @@ func (api *Upfile) UploadExcel(c *gin.Context) {
 			results.Success(c, "上传成功", getdata, nil)
 		}
 	}
+}
+
+func (api *Upfile) Get_file(c *gin.Context) {
+	file_path := c.DefaultQuery("file_path", "")
+
+	if file_path == "" {
+		results.Failed(c, "文件路径不能为空", nil)
+		return
+	}
+	buf, err := os.ReadFile(file_path)
+	if err != nil {
+		results.Failed(c, "文件破损，打开失败", err)
+		return
+	}
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Access-Control-Expose-Headers", "Content-Disposition")
+	c.Header("response-type", "blob") // 以流的形式下载必须设置这一项，否则前端下载下来的文件会出现格式不正确或已损坏的问题
+	c.Header("Content-Disposition", "attachment; filename=file.xlsx")
+	c.Data(http.StatusOK, "application/vnd.ms-excel", buf)
 }
 
 // md5加密
