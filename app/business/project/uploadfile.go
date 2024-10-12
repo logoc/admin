@@ -205,18 +205,18 @@ func parseExcel(file io.Reader) ([]map[string]interface{}, error) {
 		if i == 0 {
 			continue
 		}
-		for _, colCell := range row {
-			fmt.Print(colCell, "|")
-
-		}
-		fmt.Print("\n")
 		if len(row) < 18 {
 			log.Printf("[error] sheet name[%s] 列数%d 小于 18 \n", name, len(row))
 			return nil, fmt.Errorf("Excel模版错误")
 		}
+		coopTime, err := gf.ParseDate(row[2])
+		if err != nil {
+			log.Printf("[error] parseDate error %v", err)
+			return nil, fmt.Errorf("合作时间解析失败 %s", rows[2])
+		}
 		data := map[string]interface{}{
 			"platform":         row[1],
-			"cooperate_time":   gf.StringTimestamp2(row[2]),
+			"cooperate_time":   coopTime.Unix(),
 			"account_type":     row[3],
 			"account_nikename": row[4],
 			"fanscnt":          row[5],

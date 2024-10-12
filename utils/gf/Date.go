@@ -1,8 +1,33 @@
 package gf
 
 import (
+	"fmt"
 	"time"
 )
+
+func ParseDate(input string) (time.Time, error) {
+	// 定义可能的日期格式
+	formats := []string{
+		"20060102",
+		"2006-01-02",
+		"2006/01/02",
+		"01/02/06",
+		"01-02-06",
+	}
+
+	var parsedDate time.Time
+	var err error
+
+	// 尝试按顺序解析每种格式
+	for _, format := range formats {
+		loc, _ := time.LoadLocation("Asia/Shanghai")
+		parsedDate, err = time.ParseInLocation(format, input, loc)
+		if err == nil {
+			return parsedDate, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("could not parse date: %s", input)
+}
 
 func StringTimestamp2(timeLayout string) int64 {
 	timetpl := "2006/1/2"

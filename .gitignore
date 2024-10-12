@@ -4,3 +4,5 @@
 /vendor
 *.log
 /bin
+.DS_Store
+__debug_*
