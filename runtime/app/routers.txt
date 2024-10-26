@@ -5,9 +5,8 @@
 /business/project/export/get_export
 /business/project/export/get_export_owner
 /business/project/export/get_list
-/business/project/project/get_search
-/business/project/project/get_search_owner
 /business/project/project/get_list
+/business/project/project/get_search
 /business/project/approve/get_list
 /business/project/resource/get_excelfile
 /business/platmanager/account/get_list

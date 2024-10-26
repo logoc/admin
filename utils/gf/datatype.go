@@ -2,6 +2,7 @@ package gf
 
 import (
 	"reflect"
+	"strconv"
 )
 
 func InArray(array []interface{}, element interface{}) bool {
@@ -18,4 +19,9 @@ func InArray(array []interface{}, element interface{}) bool {
 		}
 	}
 	return false
+}
+
+func IsInt(str string) bool {
+	_, err := strconv.Atoi(str)
+	return err == nil
 }

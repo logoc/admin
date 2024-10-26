@@ -221,19 +221,31 @@ func parseExcel(file io.Reader) ([]map[string]interface{}, error) {
 		return nil, err
 	}
 	insertDatas := make([]map[string]interface{}, 0)
+	platNames := make(map[string][]string, 0)
 	for i, row := range rows {
 		if i == 0 {
 			continue
 		}
+		for i, v := range row {
+			row[i] = strings.TrimSpace(v)
+			if row[i] == "" && i != 6 {
+				log.Printf("[error] sheet name[%s] 第%d行第%d列为空", name, i+1, i+1)
+				return nil, fmt.Errorf("第%d行第%d列为空", i+1, i+1)
+			}
+		}
 		if len(row) < 18 {
 			log.Printf("[error] sheet name[%s] 列数%d 小于 18 \n", name, len(row))
-			return nil, fmt.Errorf("Excel模版错误")
+			return nil, fmt.Errorf("第%d行小于18列", i+1)
 		}
 		coopTime, err := gf.ParseDate(row[2])
 		if err != nil {
 			log.Printf("[error] parseDate error %v", err)
-			return nil, fmt.Errorf("合作时间解析失败 %s", rows[2])
+			return nil, fmt.Errorf("第%d行 合作时间[%s]无法解析", i+1, rows[2])
 		}
+		if !gf.IsInt(row[5]) {
+			return nil, fmt.Errorf("第%d行 粉丝数[%s]不是数字", i+1, rows[2])
+		}
+
 		data := map[string]interface{}{
 			"platform":         row[1],
 			"cooperate_time":   coopTime.Unix(),
@@ -255,6 +267,33 @@ func parseExcel(file io.Reader) ([]map[string]interface{}, error) {
 			"create_time":      time.Now().Unix(),
 		}
 		insertDatas = append(insertDatas, data)
+	}
+	for k, v := range platNames {
+		pID, err := model.DB().Table("media_plat").Where("plat_name", k).Value("id")
+		if err != nil {
+			return nil, fmt.Errorf("数据库操作失败, 平台表查询失败")
+		}
+		if pID == nil {
+			return nil, fmt.Errorf("平台[%s]不存在, 请先添加平台", k)
+		}
+		for a := range v {
+			aID, err := model.DB().Table("media_plat_account").Where("account_type", a).Where("plat_id", pID).Value("id")
+			if err != nil {
+				return nil, fmt.Errorf("数据库操作失败, 平台账户类型表查询失败")
+			}
+			if aID == nil {
+				adata := map[string]interface{}{
+					"createtime":   time.Now().Unix(),
+					"plat_id":      pID,
+					"account_type": a,
+					"order_id":     0,
+				}
+				_, err = model.DB().Table("media_plat_account").Data(adata).InsertGetId()
+				if err != nil {
+					return nil, fmt.Errorf("数据库操作失败, 平台账户类型表写入失败")
+				}
+			}
+		}
 	}
 	return insertDatas, nil
 }

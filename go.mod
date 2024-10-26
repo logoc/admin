@@ -3,7 +3,6 @@ module gofly
 go 1.19
 
 require (
-	github.com/alibabacloud-go/darabonba-env v1.0.0
 	github.com/alibabacloud-go/darabonba-openapi v0.2.1
 	github.com/alibabacloud-go/dysmsapi-20170525/v2 v2.0.18
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
