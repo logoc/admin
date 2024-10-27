@@ -25,3 +25,8 @@ func IsInt(str string) bool {
 	_, err := strconv.Atoi(str)
 	return err == nil
 }
+
+func IsFloat(str string) bool {
+	_, err := strconv.ParseFloat(str, 64)
+	return err == nil
+}

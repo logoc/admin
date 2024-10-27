@@ -107,7 +107,7 @@ func (api *Upfile) UploadExcel(c *gin.Context) {
 	}
 	projectDatas, err := parseExcel(fileContent)
 	if err != nil {
-		results.Failed(c, "文件Excel内容解析失败", err)
+		results.Failed(c, err.Error(), err)
 		return
 	}
 	m_d5 := sha256.New()
@@ -240,10 +240,26 @@ func parseExcel(file io.Reader) ([]map[string]interface{}, error) {
 		coopTime, err := gf.ParseDate(row[2])
 		if err != nil {
 			log.Printf("[error] parseDate error %v", err)
-			return nil, fmt.Errorf("第%d行 合作时间[%s]无法解析", i+1, rows[2])
+			return nil, fmt.Errorf("第%d行 合作时间[%s]无法解析", i+1, row[2])
+		}
+		if coopTime.IsZero() {
+			log.Printf("[error] parseDate error %v", err)
+			return nil, fmt.Errorf("第%d行 合作时间[%s]不符合要求", i+1, row[2])
 		}
 		if !gf.IsInt(row[5]) {
-			return nil, fmt.Errorf("第%d行 粉丝数[%s]不是数字", i+1, rows[2])
+			return nil, fmt.Errorf("第%d行 粉丝数[%s]不是数字", i+1, row[5])
+		}
+
+		if !gf.IsInt(row[11]) {
+			return nil, fmt.Errorf("第%d行 税率[%s]不是Float类型", i+1, row[11])
+		}
+
+		if !gf.IsInt(row[8]) {
+			return nil, fmt.Errorf("第%d行 平台价格[%s]不是数字", i+1, row[8])
+		}
+
+		if !gf.IsInt(row[9]) {
+			return nil, fmt.Errorf("第%d行 执行价[%s]不是数字", i+1, row[9])
 		}
 
 		data := map[string]interface{}{
@@ -267,19 +283,24 @@ func parseExcel(file io.Reader) ([]map[string]interface{}, error) {
 			"create_time":      time.Now().Unix(),
 		}
 		insertDatas = append(insertDatas, data)
+		if platNames[row[1]] == nil {
+			platNames[row[1]] = []string{row[3]}
+		} else {
+			platNames[row[1]] = append(platNames[row[1]], row[3])
+		}
 	}
 	for k, v := range platNames {
 		pID, err := model.DB().Table("media_plat").Where("plat_name", k).Value("id")
 		if err != nil {
-			return nil, fmt.Errorf("数据库操作失败, 平台表查询失败")
+			return nil, fmt.Errorf("数据库操作失败, 合作平台表查询失败")
 		}
 		if pID == nil {
-			return nil, fmt.Errorf("平台[%s]不存在, 请先添加平台", k)
+			return nil, fmt.Errorf("合作平台[%s]不存在, 请在平台管理添加平台后上传", k)
 		}
-		for a := range v {
+		for _, a := range v {
 			aID, err := model.DB().Table("media_plat_account").Where("account_type", a).Where("plat_id", pID).Value("id")
 			if err != nil {
-				return nil, fmt.Errorf("数据库操作失败, 平台账户类型表查询失败")
+				return nil, fmt.Errorf("数据库操作失败, 合作平台账户类型表查询失败")
 			}
 			if aID == nil {
 				adata := map[string]interface{}{
@@ -287,10 +308,11 @@ func parseExcel(file io.Reader) ([]map[string]interface{}, error) {
 					"plat_id":      pID,
 					"account_type": a,
 					"order_id":     0,
+					"remark":       "来自文件上传导入",
 				}
 				_, err = model.DB().Table("media_plat_account").Data(adata).InsertGetId()
 				if err != nil {
-					return nil, fmt.Errorf("数据库操作失败, 平台账户类型表写入失败")
+					return nil, fmt.Errorf("数据库操作失败, 合作平台账户类型表写入失败")
 				}
 			}
 		}
