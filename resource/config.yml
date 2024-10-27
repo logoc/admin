@@ -8,7 +8,7 @@ dbconf:
      #用户名
      username: root
      #密码
-     password: Liliang@123
+     password: Test@123
      #数据库名
      database: enterprise
      #数据表前缀
@@ -34,7 +34,7 @@ app:
      # Gin 框架在运行的时候默认是debug模式 有： 开发：debug，生产：release，测试模式：test
      runlogtype: debug
      # 配置代码生成时-前端代码根目录位置(开发必改)
-     vueobjroot: /Users/horizon/Documents/workspace/deploy/template/admin
+     vueobjroot: /Users/test/Documents/workspace/deploy/template/admin
      #配置企业私有仓网址
      companyPrivateHouse: 
      # 配置根域名访问重定向路径,默认是业务端后台
